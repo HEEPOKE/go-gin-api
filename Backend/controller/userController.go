@@ -16,7 +16,7 @@ func main() {
 
 	db.AutoMigrate(&model.User{})
 
-	db.Create(&model.User{Firstname: "D42", Lastname: "a"})
+	db.Create(&model.User{FirstName: "D42", LastName: "a"})
 
 	var user model.User
 	db.First(&user, 1)
@@ -24,7 +24,7 @@ func main() {
 
 	db.Model(&user).Update("Price", 200)
 
-	db.Model(&user).Updates(model.User{Firstname: "D42", Lastname: "a"})
+	db.Model(&user).Updates(model.User{FirstName: "D42", LastName: "a"})
 	db.Model(&user).Updates(map[string]interface{}{"Firstname": 200, "Lastname": "F42"})
 
 	db.Delete(&user, 1)
