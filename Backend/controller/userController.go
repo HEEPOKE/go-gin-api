@@ -16,16 +16,16 @@ func main() {
 
 	db.AutoMigrate(&model.User{})
 
-	db.Create(&model.User{FirstName: "D42", LastName: "a"})
+	db.Create(&model.User{UserName: "D42", Email: "a@gmail.com"})
 
 	var user model.User
 	db.First(&user, 1)
-	db.First(&user, "code = ?", "D42")
+	db.First(&user, "UserName = ?", "D42")
 
 	db.Model(&user).Update("Price", 200)
 
-	db.Model(&user).Updates(model.User{FirstName: "D42", LastName: "a"})
-	db.Model(&user).Updates(map[string]interface{}{"Firstname": 200, "Lastname": "F42"})
+	db.Model(&user).Updates(model.User{UserName: "D42", Email: "a@gmail.com"})
+	db.Model(&user).Updates(map[string]interface{}{"Username": "D42", "Email": "a@gmail.com"})
 
 	db.Delete(&user, 1)
 }
