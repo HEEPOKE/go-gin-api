@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,5 +14,6 @@ func main() {
 			"message": "pong",
 		})
 	})
+	r.Use(cors.Default())
 	r.Run()
 }
