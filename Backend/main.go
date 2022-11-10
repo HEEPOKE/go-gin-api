@@ -9,11 +9,11 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.Use(cors.Default())
 	r.GET("/user", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
-	r.Use(cors.Default())
 	r.Run()
 }
