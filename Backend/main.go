@@ -12,6 +12,6 @@ func main() {
 	config.Database()
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.POST("/register", controller.Register())
+	r.POST("/register", controller.Register)
 	r.Run()
 }

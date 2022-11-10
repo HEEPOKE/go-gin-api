@@ -4,6 +4,6 @@ import "gorm.io/gorm"
 
 type Auth struct {
 	gorm.Model
-	UserName string
-	Password string
+	Username string `json:"username" binding:"required"`
+	Password string `json:"pssword" binding:"required"`
 }
