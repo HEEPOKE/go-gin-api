@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 type Product struct {
 	gorm.Model
-	Name     string `json:"username" binding:"required"`
-	Color    string `json:"email" binding:"required"`
-	Category string `json:"pssword" binding:"required"`
+	Name     string `json:"name" binding:"required"`
+	Color    string `json:"color" binding:"required"`
+	Category string `json:"category" binding:"required"`
 	Price    uint   `json:"price" binding:"required"`
 }
