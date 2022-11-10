@@ -3,11 +3,16 @@ package controller
 import (
 	"Backend/go-api/config"
 	"Backend/go-api/model"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var hmacSampleSecret []byte
 
 func Register(c *gin.Context) {
 	var json model.User
@@ -30,13 +35,13 @@ func Register(c *gin.Context) {
 	if user.ID > 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"userId":  user.ID,
-			"message": "success",
 			"status":  "ok",
+			"message": "success",
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "fail",
 			"status":  "error",
+			"message": "fail",
 		})
 	}
 }
@@ -49,26 +54,33 @@ func Login(c *gin.Context) {
 	}
 	var userExist model.Auth
 	config.DB.Where("username = ?", json.Username).First(&userExist)
-	if userExist.ID > 0 {
+	if userExist.ID == 0 {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "user Exist",
 			"status":  "error",
+			"message": "user Does Not Exist",
 		})
 		return
 	}
-	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
-	user := model.Auth{Username: json.Username, Password: string(encryptedPassword)}
-	config.DB.Create(&user)
-	if user.ID > 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"userId":  user.ID,
-			"message": "success",
-			"status":  "ok",
+	err := bcrypt.CompareHashAndPassword([]byte(userExist.Password), []byte(json.Password))
+	if err == nil {
+		hmacSampleSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"userId": userExist.ID,
 		})
+		tokenString, err := token.SignedString(hmacSampleSecret)
+		fmt.Println(tokenString, err)
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"message": "Login Success",
+			"token":   tokenString,
+		})
+		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "fail",
 			"status":  "error",
+			"message": "Login Failed",
 		})
+		return
 	}
 }
