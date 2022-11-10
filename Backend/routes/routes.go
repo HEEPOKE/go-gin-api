@@ -23,5 +23,6 @@ func Router() {
 	// product
 	r.POST("/product/create", ProductController.Create)
 	r.POST("/product/edit/:id", ProductController.Edit)
+	r.DELETE("/product/delete/:id", ProductController.Delete)
 	r.Run()
 }

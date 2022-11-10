@@ -30,3 +30,15 @@ func Edit(c *gin.Context) {
 	result := config.DB.First(&product, id)
 	c.JSON(http.StatusOK, result)
 }
+
+func Delete(c *gin.Context) {
+	id := c.Param("id")
+	var product model.Product
+	if err := c.ShouldBindJSON(&product); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	result := config.DB.Delete(&product, id)
+	c.JSON(http.StatusOK, result)
+}
