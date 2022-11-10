@@ -8,12 +8,13 @@ import (
 )
 
 var DB *gorm.DB
+var err error
 
-func database() {
+func Database() {
 	dsn := "root:root@tcp(127.0.0.1:3306)/Shirtgo?charset=utf8&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&model.User{})
+	DB.AutoMigrate(&model.User{})
 }

@@ -10,11 +10,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func register() {
-
+func Register() {
 	r := gin.Default()
 	r.Use(cors.Default())
-
 	r.POST("/register", func(c *gin.Context) {
 		var json model.User
 		if err := c.ShouldBindJSON(&json); err != nil {
@@ -30,7 +28,6 @@ func register() {
 			})
 			return
 		}
-
 		encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
 		user := model.User{Username: json.Username, Password: string(encryptedPassword), Email: json.Email}
 		config.DB.Create(&user)
