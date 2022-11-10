@@ -13,17 +13,17 @@ import (
 func Router() {
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.POST("/login", AuthController.Login)
-	r.POST("/register", AuthController.Register)
+	r.POST("/api/login", AuthController.Login)
+	r.POST("/api/register", AuthController.Register)
 	//users
-	authorized := r.Group("/users", middleware.ValidationUsers())
+	authorized := r.Group("/api/users", middleware.ValidationUsers())
 	{
 		authorized.GET("/get", UserController.GetUser)
 		authorized.GET("/get/:id", UserController.LockUser)
 		authorized.GET("/profile", UserController.Profile)
 	}
 	// product
-	product := r.Group("/product")
+	product := r.Group("/api/product")
 	{
 		product.GET("/get", ProductController.ReadProduct)
 		product.POST("/create", ProductController.Create)

@@ -71,7 +71,6 @@ func Login(c *gin.Context) {
 		})
 		tokenString, err := token.SignedString(hmacSampleSecret)
 		fmt.Println(tokenString, err)
-
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"message": "Login Success",
