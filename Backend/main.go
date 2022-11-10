@@ -1,19 +1,17 @@
 package main
 
 import (
-	"net/http"
+	"Backend/go-api/config"
+	"Backend/go-api/controller"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	config.Database()
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.GET("/user", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	r.POST("/register", controller.Register)
 	r.Run()
 }
