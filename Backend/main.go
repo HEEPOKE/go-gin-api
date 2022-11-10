@@ -2,11 +2,10 @@ package main
 
 import (
 	"Backend/go-api/config"
-	"Backend/go-api/controller"
+	"Backend/go-api/routes"
+
 	"fmt"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -16,9 +15,5 @@ func main() {
 		fmt.Println("Error loading .env file")
 	}
 	config.Database()
-	r := gin.Default()
-	r.Use(cors.Default())
-	r.POST("/login", controller.Login)
-	r.POST("/register", controller.Register)
-	r.Run()
+	routes.Router()
 }
