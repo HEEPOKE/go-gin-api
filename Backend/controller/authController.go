@@ -49,26 +49,25 @@ func Login(c *gin.Context) {
 	}
 	var userExist model.Auth
 	config.DB.Where("username = ?", json.Username).First(&userExist)
-	if userExist.ID > 0 {
+	if userExist.ID == 0 {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "user Exist",
+			"message": "user Does Not Exist",
 			"status":  "error",
 		})
 		return
 	}
-	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
-	user := model.Auth{Username: json.Username, Password: string(encryptedPassword)}
-	config.DB.Create(&user)
-	if user.ID > 0 {
+	err := bcrypt.CompareHashAndPassword([]byte(userExist.Password), []byte(json.Password))
+	if err == nil {
 		c.JSON(http.StatusOK, gin.H{
-			"userId":  user.ID,
-			"message": "success",
+			"message": "Login Success",
 			"status":  "ok",
 		})
+		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "fail",
+			"message": "Login Failed",
 			"status":  "error",
 		})
+		return
 	}
 }
