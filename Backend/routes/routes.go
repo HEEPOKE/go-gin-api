@@ -19,8 +19,9 @@ func Router() {
 	authorized := r.Group("/users", middleware.ValidationUsers())
 	authorized.GET("/get", UserController.GetUser)
 	authorized.GET("/get/:id", UserController.LockUser)
-	authorized.GET("/profile", ProductController.Create)
+	authorized.GET("/profile", UserController.Profile)
 	// product
-	r.POST("/create", AuthController.Register)
+	r.POST("/product/create", ProductController.Create)
+	r.POST("/product/edit/:id", ProductController.Edit)
 	r.Run()
 }

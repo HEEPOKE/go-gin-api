@@ -9,12 +9,24 @@ import (
 )
 
 func Create(c *gin.Context) {
-	userId := c.MustGet("userId").(float64)
-	var user []model.User
-	config.DB.First(&user, userId)
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"message": "success",
-		"users":   user,
-	})
+	var product model.Product
+	if err := c.ShouldBindJSON(&product); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	result := config.DB.Create(&product)
+	c.JSON(http.StatusOK, result)
+}
+
+func Edit(c *gin.Context) {
+	id := c.Param("id")
+	var product model.Product
+	if err := c.ShouldBindJSON(&product); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	result := config.DB.First(&product, id)
+	c.JSON(http.StatusOK, result)
 }

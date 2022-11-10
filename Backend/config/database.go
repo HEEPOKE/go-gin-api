@@ -18,4 +18,5 @@ func Database() {
 		panic("failed to connect database")
 	}
 	DB.AutoMigrate(&model.User{})
+	DB.AutoMigrate(&model.Product{})
 }
