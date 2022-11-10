@@ -17,6 +17,18 @@ func GetUser(c *gin.Context) {
 		"users":   users,
 	})
 }
+
+func LockUser(c *gin.Context) {
+	id := c.Param("id")
+	var user []model.User
+	config.DB.First(&user, id)
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "ok",
+		"message": "success",
+		"users":   user,
+	})
+}
+
 func Profile(c *gin.Context) {
 	userId := c.MustGet("userId").(float64)
 	var user []model.User
