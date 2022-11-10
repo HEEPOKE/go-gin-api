@@ -2,7 +2,8 @@ package main
 
 import (
 	"Backend/go-api/config"
-	"Backend/go-api/controller"
+	AuthController "Backend/go-api/controller/auth"
+	UserController "Backend/go-api/controller/user"
 	"fmt"
 
 	"github.com/gin-contrib/cors"
@@ -18,7 +19,8 @@ func main() {
 	config.Database()
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.POST("/login", controller.Login)
-	r.POST("/register", controller.Register)
+	r.POST("/login", AuthController.Login)
+	r.POST("/register", AuthController.Register)
+	r.GET("/users", UserController.GetUser)
 	r.Run()
 }

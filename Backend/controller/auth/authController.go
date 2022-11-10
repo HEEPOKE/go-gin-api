@@ -1,4 +1,4 @@
-package controller
+package auth
 
 import (
 	"Backend/go-api/config"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -66,6 +67,7 @@ func Login(c *gin.Context) {
 		hmacSampleSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"userId": userExist.ID,
+			"exp":    time.Now().Add(time.Minute * 1).Unix(),
 		})
 		tokenString, err := token.SignedString(hmacSampleSecret)
 		fmt.Println(tokenString, err)
