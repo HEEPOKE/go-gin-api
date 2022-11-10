@@ -17,12 +17,19 @@ func Router() {
 	r.POST("/register", AuthController.Register)
 	//users
 	authorized := r.Group("/users", middleware.ValidationUsers())
-	authorized.GET("/get", UserController.GetUser)
-	authorized.GET("/get/:id", UserController.LockUser)
-	authorized.GET("/profile", UserController.Profile)
+	{
+		authorized.GET("/get", UserController.GetUser)
+		authorized.GET("/get/:id", UserController.LockUser)
+		authorized.GET("/profile", UserController.Profile)
+	}
 	// product
-	r.POST("/product/create", ProductController.Create)
-	r.POST("/product/edit/:id", ProductController.Edit)
-	r.DELETE("/product/delete/:id", ProductController.Delete)
+	product := r.Group("/product")
+	{
+		product.GET("/get", ProductController.ReadProduct)
+		product.POST("/create", ProductController.Create)
+		product.PUT("/edit/:id", ProductController.Edit)
+		product.DELETE("/delete/:id", ProductController.Delete)
+	}
+
 	r.Run()
 }
