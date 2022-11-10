@@ -2,6 +2,7 @@ package routes
 
 import (
 	AuthController "Backend/go-api/controller/auth"
+	ProductController "Backend/go-api/controller/product"
 	UserController "Backend/go-api/controller/user"
 	"Backend/go-api/middleware"
 
@@ -17,7 +18,9 @@ func Router() {
 	//users
 	authorized := r.Group("/users", middleware.ValidationUsers())
 	authorized.GET("/get", UserController.GetUser)
-	authorized.GET("/profile", UserController.Profile)
-
+	authorized.GET("/get/:id", UserController.LockUser)
+	authorized.GET("/profile", ProductController.Create)
+	// product
+	r.POST("/create", AuthController.Register)
 	r.Run()
 }
