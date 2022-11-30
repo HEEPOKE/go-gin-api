@@ -18,7 +18,7 @@ func GetUser(c *gin.Context) {
 	})
 }
 
-func LockUser(c *gin.Context) {
+func GetUserById(c *gin.Context) {
 	id := c.Param("id")
 	var user []model.User
 	config.DB.First(&user, id)
