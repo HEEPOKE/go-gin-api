@@ -25,27 +25,28 @@ func Router() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+
 	auth := r.Group("/api/auth")
 	{
 		auth.GET("/login", AuthController.Login)
 		auth.POST("/register", AuthController.Register)
 		auth.GET("/logout", AuthController.Logout)
 	}
-	//users
+
 	authorized := r.Group("/api/users", middleware.ValidationUsers())
 	{
-		authorized.GET("/get", UserController.GetUser)
 		authorized.GET("/get/:id", UserController.GetUserById)
 		authorized.GET("/profile", UserController.Profile)
 	}
-	// product
+
 	product := r.Group("/api/product")
 	{
-		product.GET("/get", ProductController.ReadProduct)
+		product.GET("/read", ProductController.ReadProduct)
 		product.POST("/create", ProductController.Create)
 		product.PUT("/edit/:id", ProductController.Edit)
 		product.DELETE("/delete/:id", ProductController.Delete)
 	}
+	r.GET("/api/read/users", UserController.GetUser)
 
 	r.Run("localhost:6476")
 }
