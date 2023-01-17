@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  mysql-db:
+    container_name: mysql-db
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: goapi
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - '3306:3306'
+    restart: always
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+
