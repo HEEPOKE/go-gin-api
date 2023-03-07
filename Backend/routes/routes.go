@@ -15,13 +15,13 @@ import (
 func Router() {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{os.Getenv("ENDPOINT_URL")},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     []string{"Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			return origin == os.Getenv("ENDPOINT_URL")
+			return true
 		},
 		MaxAge: 12 * time.Hour,
 	}))
