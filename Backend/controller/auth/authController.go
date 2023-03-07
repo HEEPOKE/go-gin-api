@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"Backend/go-api/common"
 	"Backend/go-api/config"
 	"Backend/go-api/model"
 	"fmt"
@@ -23,16 +24,24 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var userExist model.User
-	config.DB.Where("username = ?", json.Username).First(&userExist)
-	if userExist.ID > 0 {
+
+	if userExists, _ := common.CheckUserExistence(json.Username); userExists {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "user Exist",
 			"status":  "error",
 		})
 		return
 	}
-	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
+
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to encrypt password",
+			"status":  "error",
+		})
+		return
+	}
+
 	user := model.User{
 		Username: json.Username,
 		Password: string(encryptedPassword),
@@ -41,18 +50,20 @@ func Register(c *gin.Context) {
 		Role:     json.Role,
 	}
 	config.DB.Create(&user)
-	if user.ID > 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "success",
-			"userId":  user.ID,
-		})
-	} else {
+
+	if user.ID <= 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "error",
-			"message": "fail",
+			"message": "failed to create user",
 		})
+		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "ok",
+		"message": "success",
+		"userId":  user.ID,
+	})
 }
 
 func Login(c *gin.Context) {
