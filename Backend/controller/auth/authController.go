@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -15,8 +14,6 @@ import (
 )
 
 const SecretKey = "secret"
-
-var hmacSampleSecret []byte
 
 func Register(c *gin.Context) {
 	var json model.User
@@ -72,37 +69,72 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var userExist model.User
-	config.DB.Where("username = ?", json.Username).First(&userExist)
+
+	userExist, err := common.GetUser(json.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to retrieve user",
+			"status":  "error",
+		})
+		return
+	}
+
 	if userExist.ID == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "error",
-			"message": "user Does Not Exist",
+			"message": "User does not exist",
 		})
 		return
 	}
-	err := bcrypt.CompareHashAndPassword([]byte(userExist.Password), []byte(json.Password))
-	if err == nil {
-		hmacSampleSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"userId": userExist.ID,
-			"exp":    time.Now().Add(time.Minute * 1).Unix(),
-		})
-		tokenString, err := token.SignedString(hmacSampleSecret)
-		fmt.Println(tokenString, err)
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "Login Success",
-			"token":   tokenString,
-		})
-		return
-	} else {
+
+	if err := common.ComparePasswords(userExist.Password, json.Password); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "error",
-			"message": "Login Failed",
+			"message": "Incorrect password",
 		})
 		return
 	}
+
+	userID := int(userExist.ID)
+	token, err := common.GenerateToken(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to generate token",
+			"status":  "error",
+		})
+		return
+	}
+
+	parsedToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "error",
+			"message": "Failed to parse token",
+		})
+		return
+	}
+
+	claims, ok := parsedToken.Claims.(*jwt.StandardClaims)
+	if !ok || !parsedToken.Valid {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "error",
+			"message": "Failed to retrieve claims from token",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "ok",
+		"message": "Login Success",
+		"token":   token,
+		"exp":     claims.ExpiresAt,
+	})
 }
 
 func Logout(c *gin.Context) {
