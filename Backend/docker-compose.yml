@@ -1,5 +1,15 @@
-version: '3.7'
+version: '3.9'
 services:
+  go-app:
+    container_name: go-app
+    image: heepoke/go-app:1.0.0
+    build: .
+    environment:
+      DATABASE_URL: "host=mysql-db user=root password= dbname=goapi sslmode=disable"
+    ports:
+      - "6476:6476"
+    depends_on:
+      - db
   mysql-db:
     container_name: mysql-db
     image: mysql:latest
