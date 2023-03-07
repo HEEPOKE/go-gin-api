@@ -48,5 +48,6 @@ func Router() {
 	}
 	r.GET("/api/read/users", UserController.GetUser)
 
-	r.Run("localhost:6476")
+	host := os.Getenv("LOCALHOST")
+	r.Run(host)
 }
