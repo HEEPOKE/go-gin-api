@@ -10,12 +10,20 @@ import (
 
 func GetUser(c *gin.Context) {
 	var users []model.User
-	config.DB.Find(&users)
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"message": "success",
-		"users":   users,
-	})
+	if err := config.DB.Find(&users).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": err.Error(),
+		})
+
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"message": "success",
+			"users":   users,
+		})
+
+	}
 }
 
 func GetUserById(c *gin.Context) {
