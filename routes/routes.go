@@ -30,7 +30,7 @@ func Router() {
 
 	auth := r.Group("/api/auth")
 	{
-		auth.GET("/login", AuthController.Login)
+		auth.POST("/login", AuthController.Login)
 		auth.POST("/register", AuthController.Register)
 		auth.GET("/logout", AuthController.Logout)
 	}
