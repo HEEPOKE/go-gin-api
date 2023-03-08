@@ -44,7 +44,7 @@ func Register(c *gin.Context) {
 		Password: string(encryptedPassword),
 		Email:    json.Email,
 		Tel:      json.Tel,
-		Role:     json.Role,
+		Role:     model.Viewer,
 	}
 	config.DB.Create(&user)
 
@@ -58,7 +58,7 @@ func Register(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
-		"message": "success",
+		"message": "Register Success",
 		"userId":  user.ID,
 	})
 }
