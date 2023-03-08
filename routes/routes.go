@@ -14,7 +14,7 @@ import (
 
 func Router() {
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{
+	corsConfig := cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Content-Type"},
@@ -24,7 +24,9 @@ func Router() {
 			return true
 		},
 		MaxAge: 12 * time.Hour,
-	}))
+	}
+
+	r.Use(cors.New(corsConfig))
 
 	auth := r.Group("/api/auth")
 	{
