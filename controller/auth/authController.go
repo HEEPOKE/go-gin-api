@@ -129,12 +129,17 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	payload := map[string]interface{}{
+		"userId": userExist.ID,
+		"role":   userExist.Role,
+		"token":  token,
+		"exp":    claims.ExpiresAt,
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"message": "Login Success",
-		"userId":  userExist.ID,
-		"token":   token,
-		"exp":     claims.ExpiresAt,
+		"payload": payload,
 	})
 }
 
