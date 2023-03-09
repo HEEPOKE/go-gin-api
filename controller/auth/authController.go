@@ -64,13 +64,18 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	var json model.User
+	var json model.Auth
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userExist, err := common.GetUser(json.Username)
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := common.GetUserByUsernameOrEmail(json.UsernameOrEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to retrieve user",
@@ -79,15 +84,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if userExist.ID == 0 {
+	if user == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "error",
-			"message": "User does not exist",
+			"message": "Invalid username or email",
 		})
 		return
 	}
 
-	if err := common.ComparePasswords(userExist.Password, json.Password); err != nil {
+	if err := common.ComparePasswords(user.Password, json.Password); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "error",
 			"message": "Incorrect password",
@@ -95,8 +100,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	userID := int(userExist.ID)
-	token, err := common.GenerateToken(userID)
+	token, err := common.GenerateToken(int(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to generate token",
@@ -129,17 +133,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	payload := map[string]interface{}{
-		"userId": userExist.ID,
-		"role":   userExist.Role,
-		"token":  token,
-		"exp":    claims.ExpiresAt,
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"message": "Login Success",
-		"payload": payload,
+		"payload": gin.H{
+			"userId": user.ID,
+			"role":   user.Role,
+			"token":  token,
+			"exp":    claims.ExpiresAt,
+		},
 	})
 }
 
