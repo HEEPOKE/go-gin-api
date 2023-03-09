@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -132,7 +133,7 @@ func Login(c *gin.Context) {
 		"status":  "ok",
 		"message": "Login Success",
 		"payload": gin.H{
-			"userId": user.ID,
+			"userId": strconv.FormatUint(uint64(user.ID), 10),
 			"role":   user.Role,
 			"token":  token,
 			"exp":    claims.ExpiresAt,
