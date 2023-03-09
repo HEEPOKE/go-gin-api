@@ -70,11 +70,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	user, err := common.GetUserByUsernameOrEmail(json.UsernameOrEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
