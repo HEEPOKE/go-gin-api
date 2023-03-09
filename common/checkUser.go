@@ -20,6 +20,18 @@ func GetUserByUsernameOrEmail(usernameOrEmail string) (*model.User, error) {
 	return &user, nil
 }
 
+func CheckUserExistence(username string) (bool, error) {
+	var userExist model.User
+	err := config.DB.Where("username = ?", username).First(&userExist).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func GetUser(username string) (model.User, error) {
 	var userExist model.User
 	err := config.DB.Where("username = ?", username).First(&userExist).Error
