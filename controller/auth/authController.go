@@ -74,24 +74,27 @@ func Login(c *gin.Context) {
 	user, err := common.GetUserByUsernameOrEmail(json.UsernameOrEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to retrieve user",
-			"status":  "error",
+			"message":     "Failed to retrieve user",
+			"status":      "error",
+			"description": "",
 		})
 		return
 	}
 
 	if user == nil {
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "error",
-			"message": "Invalid username or email",
+			"status":      "error",
+			"message":     "Invalid username or email",
+			"description": "username or email",
 		})
 		return
 	}
 
 	if err := common.ComparePasswords(user.Password, json.Password); err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "error",
-			"message": "Incorrect password",
+			"status":      "error",
+			"message":     "Incorrect password",
+			"description": "password",
 		})
 		return
 	}
@@ -99,8 +102,9 @@ func Login(c *gin.Context) {
 	token, err := common.GenerateToken(int(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to generate token",
-			"status":  "error",
+			"message":     "Failed to generate token",
+			"status":      "error",
+			"description": "",
 		})
 		return
 	}
@@ -114,8 +118,9 @@ func Login(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "error",
-			"message": "Failed to parse token",
+			"status":      "error",
+			"message":     "Failed to parse token",
+			"description": "",
 		})
 		return
 	}
@@ -123,8 +128,9 @@ func Login(c *gin.Context) {
 	claims, ok := parsedToken.Claims.(*jwt.StandardClaims)
 	if !ok || !parsedToken.Valid {
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "error",
-			"message": "Failed to retrieve claims from token",
+			"status":      "error",
+			"message":     "Failed to retrieve claims from token",
+			"description": "",
 		})
 		return
 	}
