@@ -133,10 +133,13 @@ func Login(c *gin.Context) {
 		"status":  "ok",
 		"message": "Login Success",
 		"payload": gin.H{
-			"userId": strconv.FormatUint(uint64(user.ID), 10),
-			"role":   user.Role,
-			"token":  token,
-			"exp":    claims.ExpiresAt,
+			"userId":   strconv.FormatUint(uint64(user.ID), 10),
+			"username": user.Username,
+			"email":    user.Email,
+			"tel":      user.Tel,
+			"role":     user.Role,
+			"token":    token,
+			"exp":      claims.ExpiresAt,
 		},
 	})
 }
