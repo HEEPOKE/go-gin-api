@@ -3,6 +3,7 @@
     "godotenv",
     "gonic",
     "gorm",
-    "joho"
+    "joho",
+    "stretchr"
   ]
 }

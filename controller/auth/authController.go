@@ -2,7 +2,6 @@ package auth
 
 import (
 	"Backend/go-api/common"
-	"Backend/go-api/config"
 	"Backend/go-api/model"
 	"Backend/go-api/services/auth"
 	"fmt"
@@ -12,11 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
-	UserService auth.UserService
+	AuthService auth.AuthService
 }
 
 const SecretKey = "secret"
@@ -28,7 +26,7 @@ func (a *Auth) Register(c *gin.Context) {
 		return
 	}
 
-	if userExists, _ := common.CheckUserExistence(json.Username); userExists {
+	if userExists, _ := a.AuthService.CheckUserExistence(json.Username); userExists {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "user Exist",
 			"status":  "error",
@@ -36,24 +34,15 @@ func (a *Auth) Register(c *gin.Context) {
 		return
 	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to encrypt password",
-			"status":  "error",
-		})
-		return
-	}
-
 	user := model.User{
 		Username: json.Username,
-		Password: string(encryptedPassword),
+		Password: json.Password,
 		Email:    json.Email,
 		Tel:      json.Tel,
 		Role:     model.Viewer,
 	}
 
-	if err := config.DB.Create(&user); err != nil {
+	if err := a.AuthService.RegisterUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "failed to create user",

@@ -5,7 +5,7 @@ import (
 	ProductController "Backend/go-api/controller/product"
 	UserController "Backend/go-api/controller/user"
 	"Backend/go-api/middleware"
-	"Backend/go-api/services"
+	authServices "Backend/go-api/services/auth"
 	"os"
 	"time"
 
@@ -29,9 +29,9 @@ func Router() {
 
 	r.Use(cors.New(corsConfig))
 
-	userService := &services.UserServiceImpl{}
+	authService := &authServices.AuthServiceImpl{}
 
-	authController := &auth.Auth{UserService: userService}
+	authController := &auth.Auth{AuthService: authService}
 	// productController := &product.Product{}
 	// userController := &user.User{}
 
