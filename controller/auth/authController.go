@@ -4,6 +4,7 @@ import (
 	"Backend/go-api/common"
 	"Backend/go-api/config"
 	"Backend/go-api/model"
+	"Backend/go-api/services/auth"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,9 +15,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type Auth struct {
+	UserService auth.UserService
+}
+
 const SecretKey = "secret"
 
-func Register(c *gin.Context) {
+func (a *Auth) Register(c *gin.Context) {
 	var json model.User
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -47,10 +52,9 @@ func Register(c *gin.Context) {
 		Tel:      json.Tel,
 		Role:     model.Viewer,
 	}
-	config.DB.Create(&user)
 
-	if user.ID <= 0 {
-		c.JSON(http.StatusOK, gin.H{
+	if err := config.DB.Create(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "failed to create user",
 		})

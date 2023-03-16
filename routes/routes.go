@@ -1,10 +1,11 @@
 package routes
 
 import (
-	AuthController "Backend/go-api/controller/auth"
+	"Backend/go-api/controller/auth"
 	ProductController "Backend/go-api/controller/product"
 	UserController "Backend/go-api/controller/user"
 	"Backend/go-api/middleware"
+	"Backend/go-api/services"
 	"os"
 	"time"
 
@@ -28,11 +29,17 @@ func Router() {
 
 	r.Use(cors.New(corsConfig))
 
+	userService := &services.UserServiceImpl{}
+
+	authController := &auth.Auth{UserService: userService}
+	// productController := &product.Product{}
+	// userController := &user.User{}
+
 	auth := r.Group("/api/auth")
 	{
-		auth.POST("/login", AuthController.Login)
-		auth.POST("/register", AuthController.Register)
-		auth.GET("/logout", AuthController.Logout)
+		// auth.POST("/login", authController.Login)
+		auth.POST("/register", authController.Register)
+		// auth.GET("/logout", authController.Logout)
 	}
 
 	authorized := r.Group("/api/users", middleware.ValidationUsers())
