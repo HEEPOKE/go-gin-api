@@ -22,6 +22,14 @@ docker build -t go-gin
 docker-compose up -d
 ```
 
+```bash
+docker run -p 6476:6476 --name go-gin-app go-gin-app
+```
+
+```bash
+docker-compose up -d
+```
+
 #### RUN
 
 ```bash
