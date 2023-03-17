@@ -58,11 +58,11 @@ jobs:
           docker build -t heepoke/go-app:latest .
           docker push heepoke/go-app:latest
 
-      - name: Deploy to Jenkins
-        env:
-          JENKINS_URL: ${{ secrets.JENKINS_URL }}
-          JENKINS_USER: ${{ secrets.JENKINS_USER }}
-          JENKINS_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
-          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
-        run: |
-            curl -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/heepoke/build?token=$JENKINS_TOKEN"
+      # - name: Deploy to Jenkins
+      #   env:
+      #     JENKINS_URL: ${{ secrets.JENKINS_URL }}
+      #     JENKINS_USER: ${{ secrets.JENKINS_USER }}
+      #     JENKINS_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
+      #     JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+      #   run: |
+      #       curl -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/heepoke/build?token=$JENKINS_TOKEN"
