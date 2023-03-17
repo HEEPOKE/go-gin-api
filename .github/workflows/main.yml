@@ -55,8 +55,8 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker build -t heepoke/go-gin:latest .
-          docker push heepoke/gogin:latest
+          docker build -t heepoke/go-app:latest .
+          docker push heepoke/go-app:latest
 
       - name: Deploy to Jenkins
         env:
