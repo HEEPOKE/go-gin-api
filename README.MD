@@ -3,27 +3,33 @@
 first start this project
 
 ```bash
-cp .env.example .env```
+cp .env.example .env
+```
 
 ## Install mod
 
 ```bash
-go mod tidy```
+go mod tidy
+```
 
 ### Docker
 
 ```bash
-docker build -t go-gin```
+docker build -t go-gin
+```
 
 ```bash
-docker-compose up -d```
+docker-compose up -d
+```
 
 #### RUN
 
 ```bash
-go run .```
+go run .
+```
 
 ##### TEST
 
 ```bash
-go test ./test```
+go test ./test
+```
