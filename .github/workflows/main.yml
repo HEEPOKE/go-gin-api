@@ -59,7 +59,7 @@ jobs:
           docker push heepoke/gogin:latest
 
       - name: Deploy to Jenkins
-        env:
+        with:
           JENKINS_URL: ${{ secrets.JENKINS_URL }}
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_PASSWORD: ${{ secrets.JENKINS_PASSWORD }}
