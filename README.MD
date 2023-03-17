@@ -2,22 +2,28 @@
 
 first start this project
 
-```cp .env.example .env```
+```bash
+cp .env.example .env```
 
 ## Install mod
 
-```go mod tidy```
+```bash
+go mod tidy```
 
 ### Docker
 
-```docker build -t go-gin```
+```bash
+docker build -t go-gin```
 
-```docker-compose up -d```
+```bash
+docker-compose up -d```
 
 #### RUN
 
-```go run .```
+```bash
+go run .```
 
 ##### TEST
 
-```go test ./test```
+```bash
+go test ./test```
