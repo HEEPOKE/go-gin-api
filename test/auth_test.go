@@ -28,6 +28,15 @@ func (m *MockAuthService) CheckUserExistence(username string) (bool, error) {
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockAuthService) GetUserByUsernameOrEmail(c *gin.Context, usernameOrEmail string) (*model.User, error) {
+	args := m.Called(c, usernameOrEmail)
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockAuthService) RespondWithToken(c *gin.Context, user *model.User) {
+	m.Called(c, user)
+}
+
 func TestRegister(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
