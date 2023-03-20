@@ -4,13 +4,9 @@ import (
 	"Backend/go-api/common"
 	"Backend/go-api/model"
 	"Backend/go-api/services/auth"
-	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 )
 
 type Auth struct {
@@ -57,90 +53,24 @@ func (a *Auth) Register(c *gin.Context) {
 	})
 }
 
-func Login(c *gin.Context) {
+func (a *Auth) Login(c *gin.Context) {
 	var json model.Auth
-	if err := c.ShouldBindJSON(&json); err != nil {
+	err := common.BindJSON(c, &json)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := common.GetUserByUsernameOrEmail(json.UsernameOrEmail)
+	user, err := a.AuthService.GetUserByUsernameOrEmail(c, json.UsernameOrEmail)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message":     "Failed to retrieve user",
-			"status":      "error",
-			"description": "",
-		})
 		return
 	}
 
-	if user == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"status":      "error",
-			"message":     "Invalid username or email",
-			"description": "username or email",
-		})
+	if !common.ComparePasswords(c, user.Password, json.Password) {
 		return
 	}
 
-	if err := common.ComparePasswords(user.Password, json.Password); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"status":      "error",
-			"message":     "Incorrect password",
-			"description": "password",
-		})
-		return
-	}
-
-	token, err := common.GenerateToken(int(user.ID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message":     "Failed to generate token",
-			"status":      "error",
-			"description": "",
-		})
-		return
-	}
-
-	parsedToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
-		}
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
-	})
-
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"status":      "error",
-			"message":     "Failed to parse token",
-			"description": "",
-		})
-		return
-	}
-
-	claims, ok := parsedToken.Claims.(*jwt.StandardClaims)
-	if !ok || !parsedToken.Valid {
-		c.JSON(http.StatusOK, gin.H{
-			"status":      "error",
-			"message":     "Failed to retrieve claims from token",
-			"description": "",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"message": "Login Success",
-		"payload": gin.H{
-			"userId":   strconv.FormatUint(uint64(user.ID), 10),
-			"username": user.Username,
-			"email":    user.Email,
-			"tel":      user.Tel,
-			"role":     user.Role,
-			"token":    token,
-			"exp":      claims.ExpiresAt,
-		},
-	})
+	a.AuthService.RespondWithToken(c, user)
 }
 
 func Logout(c *gin.Context) {

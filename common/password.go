@@ -1,7 +1,21 @@
 package common
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"net/http"
 
-func ComparePasswords(hash, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+)
+
+func ComparePasswords(c *gin.Context, hash, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":      "error",
+			"message":     "Incorrect password",
+			"description": "password",
+		})
+		return false
+	}
+	return true
 }
