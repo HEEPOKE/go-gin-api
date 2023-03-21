@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
+	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -35,6 +37,27 @@ func (m *MockAuthService) GetUserByUsernameOrEmail(c *gin.Context, usernameOrEma
 
 func (m *MockAuthService) RespondWithToken(c *gin.Context, user *model.User) {
 	m.Called(c, user)
+}
+
+func (m *MockAuthService) AddTokenToBlacklist(tokenString string, expiration time.Time) {
+	m.Called(tokenString, expiration)
+}
+
+func (m *MockAuthService) IsTokenBlacklisted(tokenString string) bool {
+	args := m.Called(tokenString)
+	return args.Bool(0)
+}
+
+func generateTestToken() string {
+	hmacSampleSecret := []byte("JWT_SECRET_KEY")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": "1",
+		"exp":    time.Now().Add(time.Hour * 72).Unix(),
+	})
+
+	tokenString, _ := token.SignedString(hmacSampleSecret)
+	return tokenString
 }
 
 func TestRegister(t *testing.T) {
@@ -85,6 +108,114 @@ func TestRegister(t *testing.T) {
 			}
 
 			req.Header.Set("Content-Type", "application/json")
+
+			resp := httptest.NewRecorder()
+			router.ServeHTTP(resp, req)
+
+			assert.Equal(t, tc.expectedCode, resp.Code)
+
+			mockAuthService = new(MockAuthService)
+			authController.AuthService = mockAuthService
+		})
+	}
+}
+
+func TestLogin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockAuthService := new(MockAuthService)
+	authController := auth.Auth{AuthService: mockAuthService}
+
+	router := gin.New()
+	router.POST("/api/auth/login", authController.Login)
+
+	testCases := []struct {
+		name         string
+		requestBody  model.Auth
+		expectedCode int
+	}{
+		{
+			name: "Successful login",
+			requestBody: model.Auth{
+				UsernameOrEmail: "testUser",
+				Password:        "testPassword",
+			},
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Invalid login credentials",
+			requestBody: model.Auth{
+				UsernameOrEmail: "testUser",
+				Password:        "wrongPassword",
+			},
+			expectedCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			user := &model.User{
+				Username: "testUser",
+				Password: "hashedTestPassword",
+			}
+			mockAuthService.On("GetUserByUsernameOrEmail", mock.Anything, tc.requestBody.UsernameOrEmail).Return(user, nil)
+			mockAuthService.On("RespondWithToken", mock.Anything, user)
+
+			reqBody, _ := json.Marshal(tc.requestBody)
+			req, err := http.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(reqBody))
+			if err != nil {
+				t.Fatalf("Couldn't create request: %v\n", err)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+
+			resp := httptest.NewRecorder()
+			router.ServeHTTP(resp, req)
+
+			assert.Equal(t, tc.expectedCode, resp.Code)
+
+			mockAuthService = new(MockAuthService)
+			authController.AuthService = mockAuthService
+		})
+	}
+}
+
+func TestLogout(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockAuthService := new(MockAuthService)
+	authController := auth.Auth{AuthService: mockAuthService}
+
+	router := gin.New()
+	router.GET("/api/auth/logout", authController.Logout)
+
+	tokenString := generateTestToken()
+
+	testCases := []struct {
+		name         string
+		token        string
+		expectedCode int
+	}{
+		{
+			name:         "Successful logout",
+			token:        tokenString,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name:         "Invalid token",
+			token:        "invalid_token",
+			expectedCode: http.StatusForbidden,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, "/api/auth/logout", nil)
+			if err != nil {
+				t.Fatalf("Couldn't create request: %v\n", err)
+			}
+
+			req.Header.Set("Authorization", "Bearer "+tc.token)
 
 			resp := httptest.NewRecorder()
 			router.ServeHTTP(resp, req)
