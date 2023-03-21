@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,15 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+func parseToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+}
+
 func ValidationUsers() gin.HandlerFunc {
 	hmacSampleSecret := []byte(os.Getenv("JWT_SECRET_KEY"))
 
@@ -17,20 +27,23 @@ func ValidationUsers() gin.HandlerFunc {
 		header := c.Request.Header.Get("Authorization")
 		tokenString := strings.Replace(header, "Bearer ", "", 1)
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("signing method: %v", token.Header["alg"])
-			}
-			return hmacSampleSecret, nil
-		})
+		token, err := parseToken(tokenString, hmacSampleSecret)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"status":  "forbidden",
+				"message": err.Error(),
+			})
+			return
+		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			c.Set("userId", claims["userId"])
 		} else {
-			c.AbortWithStatusJSON(http.StatusOK, gin.H{
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"status":  "forbidden",
-				"message": err.Error(),
+				"message": errors.New("invalid token").Error(),
 			})
+			return
 		}
 		c.Next()
 	}

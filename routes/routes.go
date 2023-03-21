@@ -32,14 +32,12 @@ func Router() {
 	authService := &authServices.AuthServiceImpl{}
 
 	authController := &auth.Auth{AuthService: authService}
-	// productController := &product.Product{}
-	// userController := &user.User{}
 
 	auth := r.Group("/api/auth")
 	{
-		// auth.POST("/login", authController.Login)
+		auth.POST("/login", authController.Login)
 		auth.POST("/register", authController.Register)
-		// auth.GET("/logout", authController.Logout)
+		auth.GET("/logout", authController.Logout)
 	}
 
 	authorized := r.Group("/api/users", middleware.ValidationUsers())

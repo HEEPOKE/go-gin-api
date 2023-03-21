@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -19,12 +21,21 @@ type AuthService interface {
 	RegisterUser(user *model.User) error
 	RespondWithToken(c *gin.Context, user *model.User)
 	GetUserByUsernameOrEmail(c *gin.Context, usernameOrEmail string) (*model.User, error)
+	AddTokenToBlacklist(tokenString string, expiration time.Time)
+	IsTokenBlacklisted(tokenString string) bool
 }
 
-type AuthServiceImpl struct{}
+type AuthServiceImpl struct {
+	tokenBlacklist struct {
+		sync.RWMutex
+		m map[string]time.Time
+	}
+}
 
 func NewAuthService() AuthService {
-	return &AuthServiceImpl{}
+	authService := &AuthServiceImpl{}
+	authService.tokenBlacklist.m = make(map[string]time.Time)
+	return authService
 }
 
 func (s *AuthServiceImpl) RegisterUser(user *model.User) error {
@@ -115,4 +126,17 @@ func (s *AuthServiceImpl) GetUserByUsernameOrEmail(c *gin.Context, usernameOrEma
 	}
 
 	return user, nil
+}
+
+func (s *AuthServiceImpl) AddTokenToBlacklist(tokenString string, expiration time.Time) {
+	s.tokenBlacklist.Lock()
+	defer s.tokenBlacklist.Unlock()
+	s.tokenBlacklist.m[tokenString] = expiration
+}
+
+func (s *AuthServiceImpl) IsTokenBlacklisted(tokenString string) bool {
+	s.tokenBlacklist.RLock()
+	defer s.tokenBlacklist.RUnlock()
+	expiration, exists := s.tokenBlacklist.m[tokenString]
+	return exists && time.Now().Before(expiration)
 }
