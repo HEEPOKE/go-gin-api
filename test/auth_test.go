@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -49,13 +50,14 @@ func (m *MockAuthService) IsTokenBlacklisted(tokenString string) bool {
 }
 
 func generateTestToken() string {
-	hmacSampleSecret := []byte("JWT_SECRET_KEY")
+	hmacSampleSecret := []byte(os.Getenv("JWT_SECRET_KEY"))
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId": "1",
-		"exp":    time.Now().Add(time.Hour * 72).Unix(),
-	})
+	claims := &jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		Issuer:    "test",
+	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, _ := token.SignedString(hmacSampleSecret)
 	return tokenString
 }
